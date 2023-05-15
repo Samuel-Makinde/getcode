@@ -1,0 +1,95 @@
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
+import './myStyles.css'
+
+function GetProductList() {
+const [productList, setProductList] = useState([])
+const [selectedProduct, setSelectedProduct] = useState(null);
+const [roomList, setRoomList] = useState([]);
+
+// to get product list
+ useEffect(() => {
+    axios.get('https://100096.pythonanywhere.com/admin_product_list/')
+      .then(res => {
+        console.log('getting products');
+        // Generate an id for each product based on its index in the array
+        const productsWithIds = res.data.product_list.map((product, index) => ({
+          id: index,
+          name: product,
+        }));
+        setProductList(productsWithIds);
+        
+      })
+      .catch(err => {
+        console.log('error', err);
+      });
+  }, []);
+
+
+
+// to get room for each product
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    axios.get(`https://100096.pythonanywhere.com/room_list/${product.name}`)
+      .then(res => {
+        console.log('getting rooms for product:', product.name);
+        
+        setRoomList(res.data.room_list);
+      })
+      .catch(err => {
+        console.log('error', err);
+      })
+     
+  };
+  const {rooms} = roomList ?? {}
+  console.log(rooms)
+ console.log("getting roomlist", roomList.rooms )
+  return (
+    <div>
+      <h2>Product List</h2>
+      
+      {productList && productList.map(product => (
+  <button key={product.id} type="button" className="post" onClick={() => handleProductClick(product)}>
+    {product.name}
+  </button>
+))}
+      {selectedProduct && (
+        <div>
+          <h2>{selectedProduct.name} Rooms</h2>
+          
+           <ul>
+      {roomList && roomList.map((room) => 
+        console.log(room)
+      )}
+    </ul> 
+    
+  
+        </div>
+      )}
+    </div>
+  );
+
+            }
+
+export default GetProductList
+
+{/* <li key={room.room_id} className='post'>
+          <p>Room ID: {room.room_id}</p>
+          <p>Room Name: {room.room_name}</p>
+          <p>Company: {room.company}</p>
+          <p>Session ID: {room.r_session}</p>
+          <h4>Messages:</h4>
+          <ul>
+            {room.messages.map((message) => (
+              <li key={message.id} className='post'>
+                <p>Message ID: {message.id}</p>
+                <p>Timestamp: {message.timestamp}</p>
+                <p>Read: {message.read ? "Yes" : "No"}</p>
+                <p>Message: {message.message}</p>
+                <p>Message Type: {message.message_type}</p>
+                <p>Side: {message.side ? "Right" : "Left"}</p>
+                <p>Author Session ID: {message.author.session_id}</p>
+              </li>
+            ))}
+          </ul>
+        </li> */}
